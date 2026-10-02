@@ -153,7 +153,6 @@ fun XBackgroundRoot(viewModel: MainViewModel) {
                     session = session,
                     onRestore = viewModel::setRestoreOnBoot,
                     onPoll = viewModel::setPollInterval,
-                    onAds = viewModel::setAdsEnabled,
                     onUsage = viewModel::openUsageAccess,
                     onOwnBattery = viewModel::openOwnBattery,
                     onGamePower = viewModel::openGamePower,

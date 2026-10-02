@@ -6,15 +6,11 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-val ads = Properties().apply {
-    val file = rootProject.file("ads.properties")
-    if (file.exists()) {
-        file.inputStream().use { load(it) }
-    }
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.inputStream().use { keystoreProperties.load(it) }
 }
-
-fun buildConfigString(value: String): String =
-    "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
 android {
     namespace = "app.xkeepalive"
@@ -24,17 +20,27 @@ android {
         applicationId = "app.xkeepalive"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.0.2"
-        val appId = ads.getProperty("admob.app.id").orEmpty()
-        val bannerId = ads.getProperty("admob.banner.id").orEmpty()
-        manifestPlaceholders["admobAppId"] = appId
-        buildConfigField("String", "ADMOB_BANNER_ID", buildConfigString(bannerId))
+        versionCode = 4
+        versionName = "1.0.3"
+    }
+
+    signingConfigs {
+        if (keystorePropertiesFile.exists()) {
+            create("release") {
+                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -85,7 +91,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     implementation("dev.rikka.shizuku:api:13.1.5")
     implementation("dev.rikka.shizuku:provider:13.1.5")
-    implementation("com.google.android.gms:play-services-ads:23.6.0")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
     testImplementation("junit:junit:4.13.2")

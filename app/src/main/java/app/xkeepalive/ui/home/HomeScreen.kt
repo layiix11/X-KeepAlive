@@ -33,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import app.xkeepalive.ads.HomeAdBanner
 import app.xkeepalive.apps.InstalledApp
 import app.xkeepalive.core.Blocker
 import app.xkeepalive.core.Phase
@@ -200,8 +199,6 @@ fun HomeScreen(
                 }
             }
         }
-
-        HomeAdBanner(settings.adsEnabled)
     }
 
     if (pickerOpen) {

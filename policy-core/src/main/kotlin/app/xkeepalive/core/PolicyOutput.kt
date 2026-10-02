@@ -67,6 +67,11 @@ object PolicyOutput {
         }
     }
 
+    fun observedAppOpMode(output: String, op: String, commandSucceeded: Boolean): String? {
+        if (!commandSucceeded) return null
+        return appOpMode(output, op) ?: "default"
+    }
+
     fun commandFailed(exitCode: Int, output: String): Boolean {
         if (exitCode != 0) return true
         val lower = output.lowercase()

@@ -109,22 +109,30 @@ class MonitorService : Service() {
         val readyBefore = shizukuWasReady
         val selected = settings.selectedPackage
         if (readyBefore && !shizuku.ready) {
-            container.events.append("SHIZUKU", "Shizuku connection lost. Continuing in standard mode, with no new commands.")
+            val pending = settings.policyPackage
+            if (pending.isNotBlank()) {
+                val report = container.policy.revert(pending)
+                container.events.append("POLICY", "Shizuku connection lost. " + describe(report))
+            } else {
+                container.events.append("SHIZUKU", "Shizuku connection lost. Continuing in standard mode, with no new commands.")
+            }
             policyVerified = false
             appliedPackage = ""
         }
         shizukuWasReady = shizuku.ready
 
         if (shizuku.ready && PackageNames.isValid(selected)) {
+            var blocked = false
             if (settings.policyPackage.isNotBlank() && settings.policyPackage != selected) {
                 val report = container.policy.revert(settings.policyPackage)
                 container.events.append("POLICY", describe(report))
+                blocked = report.mode != "REVERT" || !report.anyVerified
                 policyVerified = false
                 appliedPackage = ""
             }
             val now = System.currentTimeMillis()
             val refreshed = container.settings.snapshot()
-            if (!policyVerified || appliedPackage != selected) {
+            if (!blocked && (!policyVerified || appliedPackage != selected)) {
                 if (now >= nextPolicyAttemptAt) {
                     val report = container.policy.apply(selected)
                     policyVerified = report.anyVerified
@@ -134,7 +142,7 @@ class MonitorService : Service() {
                     container.session.update { it.copy(policy = report) }
                     container.events.append("POLICY", describe(report))
                 }
-            } else if (now >= nextVerifyAt) {
+            } else if (!blocked && now >= nextVerifyAt) {
                 val still = container.policy.verify(selected, refreshed.standbyChanged)
                 if (still != policyVerified) {
                     container.events.append(

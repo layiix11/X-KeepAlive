@@ -4,9 +4,12 @@ import android.content.Context
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import app.xkeepalive.core.PolicyPlan
+import app.xkeepalive.core.StoredPolicy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -19,13 +22,31 @@ data class UserSettings(
     val selectedPackage: String = "",
     val selectedLabel: String = "",
     val pollIntervalMs: Long = 2_000L,
-    val adsEnabled: Boolean = false,
     val consentAccepted: Boolean = false,
     val baselinePackage: String = "",
     val savedStandby: String = "",
     val savedInactive: String = "",
     val standbyChanged: Boolean = false,
     val policyPackage: String = "",
+    val whitelistAlreadyPresent: Boolean = false,
+    val whitelistAddedByUs: Boolean = false,
+    val inactiveChanged: Boolean = false,
+    val savedAppOps: String = "",
+    val changedAppOps: String = "",
+    val policyGeneration: Int = 0,
+)
+
+fun UserSettings.toStoredPolicy(): StoredPolicy = StoredPolicy(
+    packageName = baselinePackage.ifBlank { policyPackage },
+    generation = policyGeneration,
+    whitelistAlreadyPresent = whitelistAlreadyPresent,
+    whitelistAddedByUs = whitelistAddedByUs,
+    savedStandby = savedStandby,
+    standbyChanged = standbyChanged,
+    savedInactive = savedInactive,
+    inactiveChanged = inactiveChanged,
+    savedAppOps = PolicyPlan.decodeAppOps(savedAppOps),
+    changedAppOps = PolicyPlan.decodeChangedOps(changedAppOps),
 )
 
 class SettingsRepository(context: Context) {
@@ -48,20 +69,21 @@ class SettingsRepository(context: Context) {
         it[Keys.poll] = intervalMs.coerceIn(1_500L, 5_000L)
     }
 
-    suspend fun setAdsEnabled(enabled: Boolean) = edit { it[Keys.ads] = enabled }
-
     suspend fun setConsentAccepted() = edit { it[Keys.consent] = true }
 
-    suspend fun saveBaseline(packageName: String, standby: String, inactive: String) = edit {
-        it[Keys.baselinePackage] = packageName
-        it[Keys.savedStandby] = standby
-        it[Keys.savedInactive] = inactive
-        it[Keys.standbyChanged] = false
+    suspend fun saveStoredPolicy(policy: StoredPolicy) = edit {
+        it[Keys.baselinePackage] = policy.packageName
+        it[Keys.savedStandby] = policy.savedStandby
+        it[Keys.savedInactive] = policy.savedInactive
+        it[Keys.standbyChanged] = policy.standbyChanged
+        it[Keys.policyPackage] = policy.packageName
+        it[Keys.whitelistAlreadyPresent] = policy.whitelistAlreadyPresent
+        it[Keys.whitelistAddedByUs] = policy.whitelistAddedByUs
+        it[Keys.inactiveChanged] = policy.inactiveChanged
+        it[Keys.savedAppOps] = PolicyPlan.encodeAppOps(policy.savedAppOps)
+        it[Keys.changedAppOps] = PolicyPlan.encodeChangedOps(policy.changedAppOps)
+        it[Keys.policyGeneration] = policy.generation
     }
-
-    suspend fun setStandbyChanged(changed: Boolean) = edit { it[Keys.standbyChanged] = changed }
-
-    suspend fun setPolicyPackage(packageName: String) = edit { it[Keys.policyPackage] = packageName }
 
     suspend fun clearPolicy() = edit {
         it.remove(Keys.baselinePackage)
@@ -69,6 +91,12 @@ class SettingsRepository(context: Context) {
         it.remove(Keys.savedInactive)
         it.remove(Keys.standbyChanged)
         it.remove(Keys.policyPackage)
+        it.remove(Keys.whitelistAlreadyPresent)
+        it.remove(Keys.whitelistAddedByUs)
+        it.remove(Keys.inactiveChanged)
+        it.remove(Keys.savedAppOps)
+        it.remove(Keys.changedAppOps)
+        it.remove(Keys.policyGeneration)
     }
 
     private suspend fun edit(block: suspend (androidx.datastore.preferences.core.MutablePreferences) -> Unit) {
@@ -81,13 +109,18 @@ class SettingsRepository(context: Context) {
         selectedPackage = this[Keys.packageName].orEmpty(),
         selectedLabel = this[Keys.label].orEmpty(),
         pollIntervalMs = (this[Keys.poll] ?: 2_000L).coerceIn(1_500L, 5_000L),
-        adsEnabled = this[Keys.ads] ?: false,
         consentAccepted = this[Keys.consent] ?: false,
         baselinePackage = this[Keys.baselinePackage].orEmpty(),
         savedStandby = this[Keys.savedStandby].orEmpty(),
         savedInactive = this[Keys.savedInactive].orEmpty(),
         standbyChanged = this[Keys.standbyChanged] ?: false,
         policyPackage = this[Keys.policyPackage].orEmpty(),
+        whitelistAlreadyPresent = this[Keys.whitelistAlreadyPresent] ?: false,
+        whitelistAddedByUs = this[Keys.whitelistAddedByUs] ?: false,
+        inactiveChanged = this[Keys.inactiveChanged] ?: false,
+        savedAppOps = this[Keys.savedAppOps].orEmpty(),
+        changedAppOps = this[Keys.changedAppOps].orEmpty(),
+        policyGeneration = this[Keys.policyGeneration] ?: 0,
     )
 
     private object Keys {
@@ -96,12 +129,17 @@ class SettingsRepository(context: Context) {
         val packageName = stringPreferencesKey("selected_package")
         val label = stringPreferencesKey("selected_label")
         val poll = longPreferencesKey("poll_interval_ms")
-        val ads = booleanPreferencesKey("ads_enabled")
         val consent = booleanPreferencesKey("consent_accepted")
         val baselinePackage = stringPreferencesKey("baseline_package")
         val savedStandby = stringPreferencesKey("saved_standby")
         val savedInactive = stringPreferencesKey("saved_inactive")
         val standbyChanged = booleanPreferencesKey("standby_changed")
         val policyPackage = stringPreferencesKey("policy_package")
+        val whitelistAlreadyPresent = booleanPreferencesKey("whitelist_already_present")
+        val whitelistAddedByUs = booleanPreferencesKey("whitelist_added_by_us")
+        val inactiveChanged = booleanPreferencesKey("inactive_changed")
+        val savedAppOps = stringPreferencesKey("saved_app_ops")
+        val changedAppOps = stringPreferencesKey("changed_app_ops")
+        val policyGeneration = intPreferencesKey("policy_generation")
     }
 }

@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -17,7 +16,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -35,14 +33,12 @@ fun SettingsScreen(
     session: SessionUi,
     onRestore: (Boolean) -> Unit,
     onPoll: (Long) -> Unit,
-    onAds: (Boolean) -> Unit,
     onUsage: () -> Unit,
     onOwnBattery: () -> Unit,
     onGamePower: () -> Unit,
     onProtocol: () -> Unit,
 ) {
     var poll by remember(settings.pollIntervalMs) { mutableFloatStateOf(settings.pollIntervalMs.toFloat()) }
-    var adsDialog by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -82,38 +78,9 @@ fun SettingsScreen(
                 steps = 6,
             )
         }
-        SectionCard {
-            Text("Ads", style = MaterialTheme.typography.titleMedium)
-            Text(
-                "Off by default. The banner appears only in this app, never over the game. IDs live in ads.properties. Now: ${if (BuildConfig.ADMOB_BANNER_ID.isBlank()) "not configured" else "configured"}.",
-                style = MaterialTheme.typography.bodySmall,
-            )
-            Switch(
-                checked = settings.adsEnabled,
-                onCheckedChange = { enabled ->
-                    if (enabled) adsDialog = true else onAds(false)
-                },
-            )
-        }
         Button(onClick = onProtocol, modifier = Modifier.fillMaxWidth()) {
             Text("On-device verification")
         }
         Text("X-KeepAlive ${BuildConfig.VERSION_NAME}", color = Mist, style = MaterialTheme.typography.bodySmall)
-    }
-    if (adsDialog) {
-        AlertDialog(
-            onDismissRequest = { adsDialog = false },
-            title = { Text("Turn on AdMob?") },
-            text = { Text("Ads contact Google’s servers. The app works fully without ads and does not upload the app list.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    adsDialog = false
-                    onAds(true)
-                }) { Text("Turn on") }
-            },
-            dismissButton = {
-                TextButton(onClick = { adsDialog = false }) { Text("Cancel") }
-            },
-        )
     }
 }

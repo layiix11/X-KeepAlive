@@ -5,7 +5,7 @@ data class GuideSection(val title: String, val body: String)
 val guideSections = listOf(
     GuideSection(
         "What it actually does",
-        "X-KeepAlive notices when the game you chose moves to the foreground or the background, using usage access. If Shizuku is running and you authorize it, the app applies four system policies and then reads them back: Doze whitelist, standby bucket, idle state, and the RUN_IN_BACKGROUND / RUN_ANY_IN_BACKGROUND app ops. “Background management active” appears only when at least one of those reads confirms the result.",
+        "X-KeepAlive notices when the game you chose moves to the foreground or the background, using usage access. If Shizuku is running and you authorize it, the app reads the current Doze whitelist, standby bucket, idle state, and RUN_IN_BACKGROUND / RUN_ANY_IN_BACKGROUND modes, then changes only the values it could read. “Background management active” appears only when at least one of those reads confirms the result. Stopping monitoring writes back the saved values. A Doze entry that was already present is left in place. If a restore cannot be confirmed, the log says so and does not call it successful.",
     ),
     GuideSection(
         "What it cannot do",
@@ -33,6 +33,6 @@ val guideSections = listOf(
     ),
     GuideSection(
         "Privacy",
-        "The selection, the log, and test results stay on the phone. There is no account and no app server. Ads are off by default: if you turn them on, AdMob contacts Google.",
+        "The selection, the log, and test results stay on the phone in app-private storage. There is no account and no app server in this app. The source does not declare the internet permission and does not include an ad or analytics SDK. Shizuku is a local service on the device. This does not describe what Android or other installed apps do outside this code.",
     ),
 )

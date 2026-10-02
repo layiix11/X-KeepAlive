@@ -70,9 +70,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             val current = container.settings.snapshot()
             if (current.automationEnabled || !PackageNames.isValid(current.policyPackage)) return@launch
             val report = container.policy.revert(current.policyPackage)
+            val restored = report.mode == "REVERT" && report.anyVerified
             container.events.append(
                 "POLICY",
-                "Leftover revoke ${report.mode} for ${report.packageName}: whitelist removed=${report.anyVerified}.",
+                if (restored) {
+                    "Leftover policy for ${report.packageName} was restored."
+                } else {
+                    "Leftover policy for ${report.packageName} was not restored (${report.mode})."
+                },
             )
         }
     }
@@ -182,10 +187,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setPollInterval(intervalMs: Long) {
         viewModelScope.launch { container.settings.setPollInterval(intervalMs) }
-    }
-
-    fun setAdsEnabled(enabled: Boolean) {
-        viewModelScope.launch { container.settings.setAdsEnabled(enabled) }
     }
 
     fun clearLog() {
