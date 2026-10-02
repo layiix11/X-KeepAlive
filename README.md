@@ -10,7 +10,7 @@
 
 X-KeepAlive applies selected Android background-management settings to an app chosen by the user. It does not automate gameplay, simulate taps, modify game files or memory, or control the game.
 
-- Package: `app.xbackground`
+- Package: `app.xkeepalive`
 - Minimum Android: 8 (API 26)
 - Target Android: 15 (API 35)
 
