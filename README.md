@@ -1,5 +1,9 @@
 # X-KeepAlive
 
+> Android utility to help keep selected games active in the background and reduce unnecessary reloads when switching apps. Requires Shizuku for privileged background policies; no root required.
+
+[**Download the latest APK**](https://github.com/layiix11/X-KeepAlive/releases/latest) · [Releases](https://github.com/layiix11/X-KeepAlive/releases)
+
 Private Android app that follows a game you choose and applies a background policy **only** when Shizuku is running and authorized. It does not play for you, does not simulate taps, and does not require root.
 
 Package: `app.xkeepalive`  
@@ -59,23 +63,19 @@ echo "sdk.dir=$ANDROID_HOME" > local.properties
 ./gradlew :policy-core:test assembleDebug
 ```
 
-Debug APK, signed with the debug certificate and installable as a sideload:
-
-- In the repo: [`releases/x-keepalive-1.0.2-debug.apk`](releases/x-keepalive-1.0.2-debug.apk)
-- App icon: [`releases/x-keepalive-icon.png`](releases/x-keepalive-icon.png)
-- After a local build: `app/build/outputs/apk/debug/app-debug.apk`
+The latest installable APK is available from the [GitHub Releases page](https://github.com/layiix11/X-KeepAlive/releases/latest). A locally built debug APK is signed with the debug certificate and can be found at `app/build/outputs/apk/debug/app-debug.apk`.
 
 Ads use the test IDs in `ads.properties`. Replace those two values only if you want your own AdMob account. AdMob starts only if you turn ads on in settings.
 
 ## Install the APK
 
-Download [`releases/x-keepalive-1.0.2-debug.apk`](releases/x-keepalive-1.0.2-debug.apk) from the pull request or the branch, then install it on the phone (unknown sources) or with ADB.
+Download the APK from [X-KeepAlive Releases](https://github.com/layiix11/X-KeepAlive/releases/latest), then install it on your phone (you may need to allow installation from this source) or with ADB.
 
 With the phone already paired for wireless debugging:
 
 1. Developer options → Wireless debugging → note the connection IP and port (not the pairing port).
 2. From the PC: `adb connect ADDRESS:PORT`
-3. `adb install -r releases/x-keepalive-1.0.2-debug.apk`
+3. `adb install -r x-keepalive-1.0.2.apk` (use the actual downloaded APK filename).
 
 In Android Studio: **Open** this repository folder, then Run.
 
@@ -104,17 +104,12 @@ The in-app guide repeats these steps.
 
 ## Tests
 
-Run in this environment, without a phone:
+Automated checks run in the development environment:
 
 - `:policy-core:test`: 18 tests, 0 failures. They cover states, PIDs, the allowlist, and parsers.
 - `:app:assembleDebug`: APK produced.
 
-Not run, because this environment has neither your phone nor the game:
-
-- switching to Home, WhatsApp, or Chrome;
-- waits of 1, 5, and 10 minutes;
-- battery use;
-- killing the service, stopping Shizuku, or rebooting the phone.
+**Device testing:** X-KeepAlive has also been tested on a physical Android phone. Results can vary by Android version, device manufacturer, battery settings, memory pressure, and the game itself; this is not a guarantee that every game will remain active or avoid reloading.
 
 On the phone use **Options → Verification protocol**. You record the outcome yourself, and it stays in the local log. The app does not invent a result.
 
