@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">X-KeepAlive</string>
+    <string name="notification_channel">X-KeepAlive monitoring</string>
+    <string name="notification_channel_description">Status of the selected game. It does not cover the game.</string>
+    <string name="notification_stop">Stop</string>
+</resources>

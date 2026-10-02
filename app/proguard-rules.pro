@@ -1,0 +1,3 @@
+-keep class app.xkeepalive.shizuku.ShellUserService { *; }
+-keep class app.xkeepalive.IShellService { *; }
+-keep class app.xkeepalive.IShellService$Stub { *; }
