@@ -52,24 +52,12 @@ When you return to the game the app compares PIDs:
 ## Architecture
 
 - `policy-core`: state machine, allowed commands, and parsers. No Android dependency, covered by JVM tests.
-- `app`: Compose, DataStore, UsageStats, a foreground service, a Shizuku UserService, and optional AdMob.
+- `app`: Compose, DataStore, UsageStats, a foreground service, and a Shizuku UserService.
 
 The shell service rejects any command outside the allowlist, including `am start`, `input`, and shell metacharacters.
 
 Modules: Compose UI, detection (`ForegroundAppDetector`), service (`MonitorService`), Shizuku (`ShizukuBridge`, `BackgroundPolicyExecutor`, `ShellUserService`), permissions (`PermissionGateway`), DataStore settings, and a local log.
 
-## Build
-
-You need JDK 17 or 21, Android SDK 35, and Build-Tools 35.
-
-```bash
-echo "sdk.dir=$ANDROID_HOME" > local.properties
-./gradlew :policy-core:test assembleDebug
-```
-
-The latest installable APK is available from the [GitHub Releases page](https://github.com/layiix11/X-KeepAlive/releases/latest). A locally built debug APK is signed with the debug certificate and can be found at `app/build/outputs/apk/debug/app-debug.apk`.
-
-Ads use the test IDs in `ads.properties`. Replace those two values only if you want your own AdMob account. AdMob starts only if you turn ads on in settings.
 
 ## Install the APK
 
@@ -119,4 +107,4 @@ On the phone use **Options → Verification protocol**. You record the outcome y
 
 ## Privacy
 
-Everything stays in DataStore and in `event-log.jsonl` on the device. Cloud backup is off. There is no account and no app server. The app list is not uploaded. Internet is declared only because AdMob, if you enable it, contacts Google. Ads do not appear over the game: the banner is only on the home screen, and only while the toggle is on.
+Everything stays in DataStore and in `event-log.jsonl` on the device. Cloud backup is off. There is no account and no app server. The app list is not uploaded. 
