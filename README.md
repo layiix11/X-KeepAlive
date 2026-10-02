@@ -69,6 +69,12 @@ X-KeepAlive has no Google AdMob integration or advertising SDK. The updated sour
 
 Settings and event logs are stored locally using DataStore and the app's local event log. This describes the behavior implemented in the source; it is not a blanket guarantee about every Android system-level service or device configuration.
 
+## License
+
+X-KeepAlive is licensed under the **GNU General Public License v3.0 (GPL-3.0-only)**. You may use, study, modify, and redistribute the source code under the terms of this license. If you distribute the program or modified versions, you must comply with the GPL-3.0 terms, including the applicable source-code and license-notice requirements.
+
+See the [`LICENSE`](LICENSE) file for the full license text, or read the [GNU GPL v3.0](https://www.gnu.org/licenses/gpl-3.0.html).
+
 ## Tests and verification
 
 The following checks were reported for version 1.0.3:
