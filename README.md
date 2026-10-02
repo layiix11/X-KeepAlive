@@ -8,22 +8,6 @@
 
 [**Download X-KeepAlive 1.0.3**](https://github.com/layiix11/X-KeepAlive/releases/tag/1.0.3) · [All releases](https://github.com/layiix11/X-KeepAlive/releases)
 
-## 🎬 Video Tutorial
-
-Learn how to install, configure, and use X-KeepAlive. Click the preview below to watch the tutorial on YouTube.
-
-<p align="center">
-  <a href="https://youtu.be/TtjWiv0QIlM">
-    <img src="https://img.youtube.com/vi/TtjWiv0QIlM/hqdefault.jpg" alt="Watch the X-KeepAlive video tutorial on YouTube" width="560">
-  </a>
-</p>
-
-X-KeepAlive applies selected Android background-management settings to an app chosen by the user. It does not automate gameplay, simulate taps, modify game files or memory, or control the game.
-
-- Package: `app.xkeepalive`
-- Minimum Android: 8 (API 26)
-- Target Android: 15 (API 35)
-
 ## Features
 
 - Applies supported background policies through Shizuku, without root.
