@@ -1,5 +1,9 @@
 # X-KeepAlive
 
+<p align="center">
+  <img src="x-keepalive-icon.png" alt="X-KeepAlive logo" width="180">
+</p>
+
 > Android utility to help keep selected games active in the background and reduce unnecessary reloads when switching apps. Requires Shizuku for privileged background policies; no root required.
 
 [**Download the latest APK**](https://github.com/layiix11/X-KeepAlive/releases/latest) · [Releases](https://github.com/layiix11/X-KeepAlive/releases)
