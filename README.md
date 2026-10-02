@@ -6,7 +6,7 @@
 
 > Android utility that helps selected games remain in the background longer when switching between apps. Uses Shizuku for supported background policies; no root required.
 
-[**Download APK 1.0.3**](releases/x-keepalive-1.0.3.apk) · [All releases](https://github.com/layiix11/X-KeepAlive/releases)
+[**Download X-KeepAlive 1.0.3**](https://github.com/layiix11/X-KeepAlive/releases/tag/1.0.3) · [All releases](https://github.com/layiix11/X-KeepAlive/releases)
 
 X-KeepAlive applies selected Android background-management settings to an app chosen by the user. It does not automate gameplay, simulate taps, modify game files or memory, or control the game.
 
@@ -48,7 +48,7 @@ Using background-management tools with a particular game may be subject to that 
 
 ## Installation
 
-Download the [X-KeepAlive 1.0.3 APK](releases/x-keepalive-1.0.3.apk) and install it on your Android device. You may need to allow installation from the source used to download the file.
+Download [X-KeepAlive 1.0.3 from GitHub Releases](https://github.com/layiix11/X-KeepAlive/releases/tag/1.0.3) and install it on your Android device. You may need to allow installation from the source used to download the file.
 
 The repository also provides a debug APK, if included with the release. The debug APK and release APK use different signing certificates and cannot be installed over one another as updates. Use the release APK for normal installation and updates signed with the matching release key.
 
