@@ -4,107 +4,83 @@
   <img src="x-keepalive-icon.png" alt="X-KeepAlive logo" width="180">
 </p>
 
-> Android utility to help keep selected games active in the background and reduce unnecessary reloads when switching apps. Requires Shizuku for privileged background policies; no root required.
+> Android utility that helps selected games remain in the background longer when switching between apps. Uses Shizuku for supported background policies; no root required.
 
-[**Download the latest APK**](https://github.com/layiix11/X-KeepAlive/releases/latest) · [Releases](https://github.com/layiix11/X-KeepAlive/releases)
+[**Download APK 1.0.3**](releases/x-keepalive-1.0.3.apk) · [All releases](https://github.com/layiix11/X-KeepAlive/releases)
 
-Private Android app that follows a game you choose and applies a background policy **only** when Shizuku is running and authorized. It does not play for you, does not simulate taps, and does not require root.
+X-KeepAlive applies selected Android background-management settings to an app chosen by the user. It does not automate gameplay, simulate taps, modify game files or memory, or control the game.
 
-Package: `app.xkeepalive`  
-Minimum: Android 8 (API 26)  
-Target: Android 15 (API 35)
+- Package: `app.xbackground`
+- Minimum Android: 8 (API 26)
+- Target Android: 15 (API 35)
 
-## What it can do
+## Features
 
-An app cannot reuse an ADB pairing on its own. Wireless debugging authorizes the client you paired (a PC or Shizuku), not every installed app. X-KeepAlive does not open an ADB socket.
+- Applies supported background policies through Shizuku, without root.
+- Monitors the selected app and records events in a local log.
+- Saves the original Android settings before changing them and attempts to restore those values when monitoring is stopped.
+- Provides standard mode without Shizuku, with foreground detection, local logging, notifications, and shortcuts to Android settings.
 
-Shizuku, started by you with wireless debugging, exposes a shell service (uid 2000). With your permission the app runs only these documented commands, then **reads the result back**:
+Shizuku must be started and authorized by the user. X-KeepAlive does not open an ADB socket or restart Shizuku after a reboot.
 
-| Command | Effect | Check |
-|---|---|---|
-| `cmd deviceidle whitelist +package` | The game is added to the Doze whitelist. If that is not enough, it retries with `dumpsys deviceidle whitelist +package`. | `cmd deviceidle whitelist` |
-| `am set-standby-bucket package active` | Sets the standby bucket to active, unless it is already `exempted`. | `am get-standby-bucket` |
-| `am set-inactive package false` | The game is not marked idle. This alone does not keep the process alive. | `am get-inactive` |
-| `cmd appops set package RUN_IN_BACKGROUND allow` | Tries to lift the pre-O background restriction. | `cmd appops get` |
-| `cmd appops set package RUN_ANY_IN_BACKGROUND allow` | Same attempt for the general restriction. On recent Android versions the system may ignore it. | `cmd appops get` |
-| `pidof package` | Reads the game's PIDs. | exit 0 with a PID, or exit 1 if none |
+## Background policy and restoration
 
-**Background management active** appears only when the whitelist, bucket, exemption, or an appop is actually confirmed. X-KeepAlive's own foreground service is never described as "the game kept alive" by itself.
+Before changing a setting, X-KeepAlive reads the current state of the Doze whitelist, standby bucket, idle state, and the `RUN_IN_BACKGROUND` and `RUN_ANY_IN_BACKGROUND` AppOps modes. It stores the values it successfully reads.
 
-Without Shizuku the app stays in standard mode: foreground detection, a local log, a notification, and shortcuts to battery settings. No privileged commands.
+If a read fails, that setting is not changed. When monitoring is stopped, the app attempts to restore the saved values rather than forcing AppOps to `default`. An item already present in the Doze whitelist is not removed.
 
-## What it cannot do
+If Shizuku becomes unavailable, a command is not confirmed, or restoration is incomplete, the local log reports the failure and the saved record is retained. X-KeepAlive does not modify another package while a previous package still has an unrestored policy.
 
-- Stop the game from reloading if the activity loses its graphics surface, even while the process is still in memory.
-- Stop Android from killing the process under memory pressure.
-- Raise `oom_score_adj` or use hidden APIs. That is not part of this app.
-- Start, close, or reopen the game, or simulate input.
-- See the ADB pairing while Shizuku is stopped.
-- Restart wireless debugging or Shizuku after a reboot. You start those again yourself.
+Restoration depends on Shizuku remaining available and Android accepting the commands. Review the app's status and local log for any reported failure.
 
-When you return to the game the app compares PIDs:
+## Limitations
 
-- same PIDs: the process is still in memory; the game can still reload;
-- missing PIDs: Android killed the process;
-- new PIDs: the process was recreated;
-- Shizuku missing: the PID cannot be checked, and the log says so.
+X-KeepAlive cannot guarantee that Android will keep a process in memory. Android may terminate an app under memory pressure, and a game may reload even if its process remains alive, for example if its activity or graphics surface is recreated.
 
-## Architecture
+The app does not:
+- Start, close, or reopen games.
+- Simulate input, automate gameplay, or provide bots or macros.
+- Modify game files, memory, or code.
+- Use hidden APIs or attempt to bypass anti-cheat systems.
+- Restart wireless debugging or Shizuku after reboot.
 
-- `policy-core`: state machine, allowed commands, and parsers. No Android dependency, covered by JVM tests.
-- `app`: Compose, DataStore, UsageStats, a foreground service, and a Shizuku UserService.
+Using background-management tools with a particular game may be subject to that game's rules. X-KeepAlive is not endorsed or certified by game developers or anti-cheat providers, and this README does not guarantee that its use is free from restrictions or bans.
 
-The shell service rejects any command outside the allowlist, including `am start`, `input`, and shell metacharacters.
+## Installation
 
-Modules: Compose UI, detection (`ForegroundAppDetector`), service (`MonitorService`), Shizuku (`ShizukuBridge`, `BackgroundPolicyExecutor`, `ShellUserService`), permissions (`PermissionGateway`), DataStore settings, and a local log.
+Download the [X-KeepAlive 1.0.3 APK](releases/x-keepalive-1.0.3.apk) and install it on your Android device. You may need to allow installation from the source used to download the file.
 
-
-## Install the APK
-
-Download the APK from [X-KeepAlive Releases](https://github.com/layiix11/X-KeepAlive/releases/latest), then install it on your phone (you may need to allow installation from this source) or with ADB.
-
-With the phone already paired for wireless debugging:
-
-1. Developer options → Wireless debugging → note the connection IP and port (not the pairing port).
-2. From the PC: `adb connect ADDRESS:PORT`
-3. `adb install -r x-keepalive-1.0.2.apk` (use the actual downloaded APK filename).
-
-In Android Studio: **Open** this repository folder, then Run.
+The repository also provides a debug APK, if included with the release. The debug APK and release APK use different signing certificates and cannot be installed over one another as updates. Use the release APK for normal installation and updates signed with the matching release key.
 
 ## First launch
 
-1. Open X-KeepAlive and choose a game from the list.
-2. Grant usage access to X-KeepAlive.
-3. Allow the notification: the foreground service has to stay visible.
-4. Optional: set X-KeepAlive's battery to unrestricted, and the game's battery to Unrestricted.
-5. If you want the ADB policy, start Shizuku and tap **Authorize**. The permission is not requested on its own.
-6. Turn the switch on once, then open the game. Closing the UI does not stop monitoring, within Android's limits.
+1. Open X-KeepAlive and select the app you want to monitor.
+2. Grant usage access if requested.
+3. Allow the foreground-service notification.
+4. Optionally review the battery settings for X-KeepAlive and the selected app.
+5. If you want to use privileged background policies, start Shizuku using its supported setup and authorize X-KeepAlive.
+6. Enable monitoring.
 
-To stop: use the switch or the **Stop** action on the notification. The applied policy is revoked if Shizuku is still reachable.
+To stop monitoring, use the in-app switch or the Stop action in the notification. The app will attempt to restore the saved settings while Shizuku is available.
 
-## Wireless debugging and Shizuku
+## Shizuku and wireless debugging
 
-1. Settings → About phone → tap Build number seven times.
-2. Developer options → turn on Wireless debugging.
-3. In Wireless debugging open **Pair device with pairing code**.
-4. In the Shizuku app choose **Start via wireless debugging** and enter the code.
-5. When Shizuku is running, return to X-KeepAlive and authorize it.
+Shizuku is an independent Android service that must be configured and started by the user. Follow the instructions in the Shizuku app and Android's Developer options to start it through wireless debugging, then return to X-KeepAlive and grant authorization.
 
-After a reboot, wireless debugging and Shizuku are off. If boot restore is enabled, X-KeepAlive can restart only its own monitoring, and only if usage access is still granted. The log warns that Shizuku must be started again by hand.
-
-The in-app guide repeats these steps.
-
-## Tests
-
-Automated checks run in the development environment:
-
-- `:policy-core:test`: 18 tests, 0 failures. They cover states, PIDs, the allowlist, and parsers.
-- `:app:assembleDebug`: APK produced.
-
-**Device testing:** X-KeepAlive has also been tested on a physical Android phone. Results can vary by Android version, device manufacturer, battery settings, memory pressure, and the game itself; this is not a guarantee that every game will remain active or avoid reloading.
-
-On the phone use **Options → Verification protocol**. You record the outcome yourself, and it stays in the local log. The app does not invent a result.
+After a reboot, wireless debugging and Shizuku may need to be started again manually. X-KeepAlive cannot restart them itself.
 
 ## Privacy
 
-Everything stays in DataStore and in `event-log.jsonl` on the device. Cloud backup is off. There is no account and no app server. The app list is not uploaded. 
+X-KeepAlive has no Google AdMob integration or advertising SDK. The updated source does not declare the `INTERNET` or `ACCESS_NETWORK_STATE` permissions.
+
+Settings and event logs are stored locally using DataStore and the app's local event log. This describes the behavior implemented in the source; it is not a blanket guarantee about every Android system-level service or device configuration.
+
+## Tests and verification
+
+The following checks were reported for version 1.0.3:
+
+- `:policy-core:test`: 29 tests passed.
+- Release build: completed successfully.
+- On-device activation, deactivation, and restoration with Shizuku: not tested as part of that build, because no Shizuku-enabled physical device was available in the build environment.
+
+A successful build and unit tests do not replace testing on a real device. Behavior may vary by Android version, device manufacturer, system settings, memory pressure, and the app being monitored.
